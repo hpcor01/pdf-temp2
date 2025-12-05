@@ -15,6 +15,7 @@ interface DocumentColumnProps {
   onRotateItem?: (docId: string, itemId: string) => void;
   onReorderItems?: (docId: string, fromIndex: number, toIndex: number) => void;
   onReorderDocuments?: (fromIndex: number, toIndex: number) => void;
+  onMoveItem?: (fromDocId: string, toDocId: string, itemId: string) => void;
   documentIndex: number;
   language: Language;
 }
@@ -31,6 +32,7 @@ const DocumentColumn: React.FC<DocumentColumnProps> = ({
   onRotateItem,
   onReorderItems,
   onReorderDocuments,
+  onMoveItem,
   documentIndex,
   language
 }) => {
@@ -40,6 +42,8 @@ const DocumentColumn: React.FC<DocumentColumnProps> = ({
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
   const [draggedColumnIndex, setDraggedColumnIndex] = useState<number | null>(null);
   const [isColumnDragging, setIsColumnDragging] = useState(false);
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+  const [draggedFromDocId, setDraggedFromDocId] = useState<string | null>(null);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -69,6 +73,8 @@ const DocumentColumn: React.FC<DocumentColumnProps> = ({
 
   const handleItemDragStart = (e: React.DragEvent, index: number) => {
     setDraggedItemIndex(index);
+    setDraggedItemId(document.items[index].id);
+    setDraggedFromDocId(document.id);
     e.dataTransfer.effectAllowed = 'move';
   };
 
@@ -79,10 +85,22 @@ const DocumentColumn: React.FC<DocumentColumnProps> = ({
 
   const handleItemDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
-    if (draggedItemIndex !== null && draggedItemIndex !== dropIndex && onReorderItems) {
-      onReorderItems(document.id, draggedItemIndex, dropIndex);
+    if (draggedItemId && draggedFromDocId) {
+      if (draggedFromDocId === document.id) {
+        // Reordering within the same column
+        if (draggedItemIndex !== null && draggedItemIndex !== dropIndex && onReorderItems) {
+          onReorderItems(document.id, draggedItemIndex, dropIndex);
+        }
+      } else {
+        // Moving from another column
+        if (onMoveItem) {
+          onMoveItem(draggedFromDocId, document.id, draggedItemId);
+        }
+      }
     }
     setDraggedItemIndex(null);
+    setDraggedItemId(null);
+    setDraggedFromDocId(null);
   };
 
   const handleItemDragEnd = () => {

@@ -163,6 +163,27 @@ const App = () => {
     }));
   };
 
+  const handleMoveItem = (fromDocId: string, toDocId: string, itemId: string) => {
+    if (fromDocId === toDocId) return; // No need to move to the same column
+    setDocuments(prev => {
+      const fromDoc = prev.find(d => d.id === fromDocId);
+      const toDoc = prev.find(d => d.id === toDocId);
+      if (!fromDoc || !toDoc) return prev;
+
+      const item = fromDoc.items.find(i => i.id === itemId);
+      if (!item) return prev;
+
+      return prev.map(doc => {
+        if (doc.id === fromDocId) {
+          return { ...doc, items: doc.items.filter(i => i.id !== itemId) };
+        } else if (doc.id === toDocId) {
+          return { ...doc, items: [...doc.items, item] };
+        }
+        return doc;
+      });
+    });
+  };
+
   const handleReorderDocuments = (fromIndex: number, toIndex: number) => {
     setDocuments(prev => {
       const newDocuments = [...prev];
@@ -249,6 +270,7 @@ const App = () => {
                     onRotateItem={handleRotateItem}
                     onReorderItems={handleReorderItems}
                     onReorderDocuments={handleReorderDocuments}
+                    onMoveItem={handleMoveItem}
                     documentIndex={index}
                     language={language}
                   />
