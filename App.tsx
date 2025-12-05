@@ -163,6 +163,15 @@ const App = () => {
     }));
   };
 
+  const handleReorderDocuments = (fromIndex: number, toIndex: number) => {
+    setDocuments(prev => {
+      const newDocuments = [...prev];
+      const [movedDoc] = newDocuments.splice(fromIndex, 1);
+      newDocuments.splice(toIndex, 0, movedDoc);
+      return newDocuments;
+    });
+  };
+
   const handleSave = async () => {
     const docsToSave = documents.filter(doc => doc.selected);
 
@@ -226,8 +235,8 @@ const App = () => {
             
             <div className="flex-1 overflow-x-auto overflow-y-hidden p-4 sm:p-6 custom-scrollbar">
               <div className="flex h-full"> 
-                {documents.map(doc => (
-                  <DocumentColumn 
+                {documents.map((doc, index) => (
+                  <DocumentColumn
                     key={doc.id}
                     document={doc}
                     settings={settings}
@@ -238,6 +247,9 @@ const App = () => {
                     onDeleteDoc={handleDeleteDocument}
                     onToggleSelection={handleToggleColumnSelection}
                     onRotateItem={handleRotateItem}
+                    onReorderItems={handleReorderItems}
+                    onReorderDocuments={handleReorderDocuments}
+                    documentIndex={index}
                     language={language}
                   />
                 ))}

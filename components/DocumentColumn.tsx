@@ -14,6 +14,8 @@ interface DocumentColumnProps {
   onToggleSelection: (docId: string, selected: boolean) => void;
   onRotateItem?: (docId: string, itemId: string) => void;
   onReorderItems?: (docId: string, fromIndex: number, toIndex: number) => void;
+  onReorderDocuments?: (fromIndex: number, toIndex: number) => void;
+  documentIndex: number;
   language: Language;
 }
 
@@ -28,12 +30,16 @@ const DocumentColumn: React.FC<DocumentColumnProps> = ({
   onToggleSelection,
   onRotateItem,
   onReorderItems,
+  onReorderDocuments,
+  documentIndex,
   language
 }) => {
   const t = TRANSLATIONS[language];
   const [isDragging, setIsDragging] = useState(false);
   const [hoveredPreviewId, setHoveredPreviewId] = useState<string | null>(null);
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  const [draggedColumnIndex, setDraggedColumnIndex] = useState<number | null>(null);
+  const [isColumnDragging, setIsColumnDragging] = useState(false);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -83,15 +89,45 @@ const DocumentColumn: React.FC<DocumentColumnProps> = ({
     setDraggedItemIndex(null);
   };
 
+  const handleColumnDragStart = (e: React.DragEvent) => {
+    setDraggedColumnIndex(documentIndex);
+    setIsColumnDragging(true);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleColumnDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleColumnDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedColumnIndex !== null && draggedColumnIndex !== dropIndex && onReorderDocuments) {
+      onReorderDocuments(draggedColumnIndex, dropIndex);
+    }
+    setDraggedColumnIndex(null);
+    setIsColumnDragging(false);
+  };
+
+  const handleColumnDragEnd = () => {
+    setDraggedColumnIndex(null);
+    setIsColumnDragging(false);
+  };
+
   return (
-    <div 
-      className={`w-80 flex-shrink-0 flex flex-col border rounded-xl overflow-hidden h-full mr-4 relative group transition-colors duration-200 
-        ${isDragging 
-          ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500' 
-          : 'bg-white dark:bg-[#18181B] border-gray-300 dark:border-gray-700'}`}
-      onDragOver={handleDragOver}
+    <div
+      draggable
+      onDragStart={handleColumnDragStart}
+      onDragOver={(e) => { handleColumnDragOver(e); handleDragOver(e); }}
       onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      onDrop={(e) => { handleColumnDrop(e, documentIndex); handleDrop(e); }}
+      onDragEnd={handleColumnDragEnd}
+      className={`w-80 flex-shrink-0 flex flex-col border rounded-xl overflow-hidden h-full mr-4 relative group transition-colors duration-200 cursor-move
+        ${isDragging
+          ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500'
+          : isColumnDragging
+          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 opacity-50'
+          : 'bg-white dark:bg-[#18181B] border-gray-300 dark:border-gray-700'}`}
     >
       {/* Header */}
       <div className="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center transition-colors">
