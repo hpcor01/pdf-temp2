@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import TopBar from './components/TopBar';
 import DocumentColumn from './components/DocumentColumn';
@@ -17,7 +17,10 @@ const App = () => {
   const [editingItem, setEditingItem] = useState<{ docId: string, item: ImageItem } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [language, setLanguage] = useState<Language>('pt-BR');
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return (savedTheme as Theme) || 'light';
+  });
   
   // Toast State
   const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'success' | 'error' }>({
@@ -177,7 +180,11 @@ const App = () => {
   };
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    setTheme(prev => {
+      const newTheme = prev === 'light' ? 'dark' : 'light';
+      localStorage.setItem('theme', newTheme);
+      return newTheme;
+    });
   };
 
   const allSelected = documents.length > 0 && documents.every(d => d.selected);
