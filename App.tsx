@@ -127,7 +127,7 @@ const App = () => {
     // Swap width and height for 90 deg rotation
     canvas.width = img.height;
     canvas.height = img.width;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -137,9 +137,9 @@ const App = () => {
     ctx.drawImage(img, -img.width / 2, -img.height / 2);
 
     const newUrl = canvas.toDataURL();
-    
+
     const updatedItem = { ...item, url: newUrl };
-    
+
     setDocuments(prev => prev.map(d => {
       if (d.id === docId) {
         return {
@@ -148,6 +148,18 @@ const App = () => {
         };
       }
       return d;
+    }));
+  };
+
+  const handleReorderItems = (docId: string, fromIndex: number, toIndex: number) => {
+    setDocuments(prev => prev.map(doc => {
+      if (doc.id === docId) {
+        const newItems = [...doc.items];
+        const [movedItem] = newItems.splice(fromIndex, 1);
+        newItems.splice(toIndex, 0, movedItem);
+        return { ...doc, items: newItems };
+      }
+      return doc;
     }));
   };
 

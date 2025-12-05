@@ -13,24 +13,27 @@ interface DocumentColumnProps {
   onDeleteDoc: (docId: string) => void;
   onToggleSelection: (docId: string, selected: boolean) => void;
   onRotateItem?: (docId: string, itemId: string) => void;
+  onReorderItems?: (docId: string, fromIndex: number, toIndex: number) => void;
   language: Language;
 }
 
-const DocumentColumn: React.FC<DocumentColumnProps> = ({ 
-  document, 
-  settings, 
-  onAddItem, 
-  onRemoveItem, 
+const DocumentColumn: React.FC<DocumentColumnProps> = ({
+  document,
+  settings,
+  onAddItem,
+  onRemoveItem,
   onEditItem,
   onRenameDoc,
   onDeleteDoc,
   onToggleSelection,
   onRotateItem,
+  onReorderItems,
   language
 }) => {
   const t = TRANSLATIONS[language];
   const [isDragging, setIsDragging] = useState(false);
   const [hoveredPreviewId, setHoveredPreviewId] = useState<string | null>(null);
+  const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -56,6 +59,28 @@ const DocumentColumn: React.FC<DocumentColumnProps> = ({
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       onAddItem(document.id, e.dataTransfer.files);
     }
+  };
+
+  const handleItemDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedItemIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleItemDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleItemDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedItemIndex !== null && draggedItemIndex !== dropIndex && onReorderItems) {
+      onReorderItems(document.id, draggedItemIndex, dropIndex);
+    }
+    setDraggedItemIndex(null);
+  };
+
+  const handleItemDragEnd = () => {
+    setDraggedItemIndex(null);
   };
 
   return (
@@ -109,8 +134,18 @@ const DocumentColumn: React.FC<DocumentColumnProps> = ({
           </div>
         )}
         
-        {document.items.map((item) => (
-          <div key={item.id} className="relative group/item bg-gray-50 dark:bg-gray-800 rounded-lg p-2.5 flex items-center space-x-3 border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition shadow-sm">
+        {document.items.map((item, index) => (
+          <div
+            key={item.id}
+            draggable
+            onDragStart={(e) => handleItemDragStart(e, index)}
+            onDragOver={handleItemDragOver}
+            onDrop={(e) => handleItemDrop(e, index)}
+            onDragEnd={handleItemDragEnd}
+            className={`relative group/item bg-gray-50 dark:bg-gray-800 rounded-lg p-2.5 flex items-center space-x-3 border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition shadow-sm cursor-move ${
+              draggedItemIndex === index ? 'opacity-50' : ''
+            }`}
+          >
             
             {/* Thumbnail */}
             <div className="w-12 h-12 bg-gray-200 dark:bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0 relative border border-gray-200 dark:border-gray-700">
