@@ -84,6 +84,7 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
       pushToHistory(newUrl);
       setCrop(null); 
     } catch (e) {
+      console.error("AI processing error:", e);
       alert("AI processing failed. Please check your API key.");
     } finally {
       setIsProcessing(false);
