@@ -1,0 +1,1 @@
+{"root":["./constants.ts","./types.ts","./vite.config.ts","./services/geminiService.ts","./services/pdfService.ts","./App.tsx","./index.tsx","./components/DocumentColumn.tsx","./components/EditorModal.tsx","./components/PdfEditorModal.tsx","./components/Toast.tsx","./components/TopBar.tsx"],"errors":true,"version":"5.8.3"}

@@ -15,6 +15,7 @@ export interface DocumentGroup {
   title: string;
   items: ImageItem[];
   selected: boolean;
+  isSorting?: boolean;
 }
 
 export interface AppSettings {
