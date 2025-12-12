@@ -8,6 +8,7 @@ import Toast from './components/Toast';
 import { DocumentGroup, AppSettings, ImageItem, Language, Theme } from './types';
 import { INITIAL_SETTINGS, TRANSLATIONS } from './constants';
 import { generatePDF } from './services/pdfService';
+import { identifyPageNumber } from './services/geminiService';
 
 const App = () => {
   const [settings, setSettings] = useState<AppSettings>(INITIAL_SETTINGS);
@@ -17,9 +18,14 @@ const App = () => {
   const [editingItem, setEditingItem] = useState<{ docId: string, item: ImageItem } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [language, setLanguage] = useState<Language>('pt-BR');
+  
+  // Theme State with Persistence
   const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('theme');
-    return (savedTheme as Theme) || 'light';
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('app-theme');
+      return (savedTheme === 'dark' || savedTheme === 'light') ? savedTheme : 'light';
+    }
+    return 'light';
   });
   
   // Toast State
@@ -127,7 +133,7 @@ const App = () => {
     // Swap width and height for 90 deg rotation
     canvas.width = img.height;
     canvas.height = img.width;
-
+    
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -137,9 +143,9 @@ const App = () => {
     ctx.drawImage(img, -img.width / 2, -img.height / 2);
 
     const newUrl = canvas.toDataURL();
-
+    
     const updatedItem = { ...item, url: newUrl };
-
+    
     setDocuments(prev => prev.map(d => {
       if (d.id === docId) {
         return {
@@ -151,46 +157,91 @@ const App = () => {
     }));
   };
 
-  const handleReorderItems = (docId: string, fromIndex: number, toIndex: number) => {
-    setDocuments(prev => prev.map(doc => {
-      if (doc.id === docId) {
-        const newItems = [...doc.items];
-        const [movedItem] = newItems.splice(fromIndex, 1);
-        newItems.splice(toIndex, 0, movedItem);
-        return { ...doc, items: newItems };
+  const handleMoveItem = (sourceDocId: string, itemId: string, targetDocId: string, targetIndex: number | null) => {
+    setDocuments(prevDocs => {
+      const newDocs = [...prevDocs];
+      const sourceDocIndex = newDocs.findIndex(d => d.id === sourceDocId);
+      const targetDocIndex = newDocs.findIndex(d => d.id === targetDocId);
+
+      if (sourceDocIndex === -1 || targetDocIndex === -1) return prevDocs;
+
+      // Find and remove item from source
+      const sourceItems = [...newDocs[sourceDocIndex].items];
+      const itemIndex = sourceItems.findIndex(i => i.id === itemId);
+      
+      if (itemIndex === -1) return prevDocs;
+      
+      const [movedItem] = sourceItems.splice(itemIndex, 1);
+      
+      // Update source items
+      newDocs[sourceDocIndex] = { ...newDocs[sourceDocIndex], items: sourceItems };
+
+      // Add to target
+      // If source and target are the same, we need to re-fetch items from the *updated* source (which is the target)
+      // to avoid index shifting issues, but simpler to just operate on newDocs references
+      
+      const targetItems = sourceDocId === targetDocId ? sourceItems : [...newDocs[targetDocIndex].items];
+      
+      if (targetIndex === null || targetIndex >= targetItems.length) {
+        targetItems.push(movedItem);
+      } else {
+        targetItems.splice(targetIndex, 0, movedItem);
       }
-      return doc;
-    }));
+
+      newDocs[targetDocIndex] = { ...newDocs[targetDocIndex], items: targetItems };
+
+      return newDocs;
+    });
   };
 
-  const handleMoveItem = (fromDocId: string, toDocId: string, itemId: string) => {
-    if (fromDocId === toDocId) return; // No need to move to the same column
-    setDocuments(prev => {
-      const fromDoc = prev.find(d => d.id === fromDocId);
-      const toDoc = prev.find(d => d.id === toDocId);
-      if (!fromDoc || !toDoc) return prev;
+  const handleAutoSort = async (docId: string) => {
+    const doc = documents.find(d => d.id === docId);
+    if (!doc || doc.items.length < 2) return;
 
-      const item = fromDoc.items.find(i => i.id === itemId);
-      if (!item) return prev;
+    // Set loading state for column
+    setDocuments(prev => prev.map(d => d.id === docId ? { ...d, isSorting: true } : d));
 
-      return prev.map(doc => {
-        if (doc.id === fromDocId) {
-          return { ...doc, items: doc.items.filter(i => i.id !== itemId) };
-        } else if (doc.id === toDocId) {
-          return { ...doc, items: [...doc.items, item] };
-        }
-        return doc;
+    try {
+      // Create a list of promises to process images in parallel (up to a limit, but for now allow all)
+      const sortPromises = doc.items.map(async (item) => {
+        if (item.type !== 'image') return { item, pageNum: -1 };
+        
+        const pageNum = await identifyPageNumber(item.url);
+        return { item, pageNum };
       });
-    });
-  };
 
-  const handleReorderDocuments = (fromIndex: number, toIndex: number) => {
-    setDocuments(prev => {
-      const newDocuments = [...prev];
-      const [movedDoc] = newDocuments.splice(fromIndex, 1);
-      newDocuments.splice(toIndex, 0, movedDoc);
-      return newDocuments;
-    });
+      const results = await Promise.all(sortPromises);
+
+      // Sort logic: 
+      // Items with detected numbers come first, sorted ascending.
+      // Items with -1 come last, maintaining original order relative to each other.
+      results.sort((a, b) => {
+        if (a.pageNum !== -1 && b.pageNum !== -1) return a.pageNum - b.pageNum;
+        if (a.pageNum !== -1) return -1;
+        if (b.pageNum !== -1) return 1;
+        return 0;
+      });
+
+      const sortedItems = results.map(r => r.item);
+
+      // Check if we actually found numbers
+      const foundAny = results.some(r => r.pageNum !== -1);
+      
+      setDocuments(prev => prev.map(d => 
+        d.id === docId ? { ...d, items: sortedItems, isSorting: false } : d
+      ));
+
+      if (foundAny) {
+        setToast({ visible: true, message: t.sortSuccess, type: 'success' });
+      } else {
+        setToast({ visible: true, message: t.sortError, type: 'error' });
+      }
+
+    } catch (e) {
+      console.error(e);
+      setDocuments(prev => prev.map(d => d.id === docId ? { ...d, isSorting: false } : d));
+      setToast({ visible: true, message: t.docSaveError, type: 'error' });
+    }
   };
 
   const handleSave = async () => {
@@ -224,7 +275,7 @@ const App = () => {
   const toggleTheme = () => {
     setTheme(prev => {
       const newTheme = prev === 'light' ? 'dark' : 'light';
-      localStorage.setItem('theme', newTheme);
+      localStorage.setItem('app-theme', newTheme);
       return newTheme;
     });
   };
@@ -256,8 +307,8 @@ const App = () => {
             
             <div className="flex-1 overflow-x-auto overflow-y-hidden p-4 sm:p-6 custom-scrollbar">
               <div className="flex h-full"> 
-                {documents.map((doc, index) => (
-                  <DocumentColumn
+                {documents.map(doc => (
+                  <DocumentColumn 
                     key={doc.id}
                     document={doc}
                     settings={settings}
@@ -268,10 +319,8 @@ const App = () => {
                     onDeleteDoc={handleDeleteDocument}
                     onToggleSelection={handleToggleColumnSelection}
                     onRotateItem={handleRotateItem}
-                    onReorderItems={handleReorderItems}
-                    onReorderDocuments={handleReorderDocuments}
+                    onAutoSort={handleAutoSort}
                     onMoveItem={handleMoveItem}
-                    documentIndex={index}
                     language={language}
                   />
                 ))}
@@ -295,7 +344,7 @@ const App = () => {
           <footer className="mt-4 text-center text-xs text-gray-500 dark:text-gray-400 space-y-1 pb-1">
              <p>Αρχή - "E não nos cansemos de fazer o bem, porque a seu tempo ceifaremos" — Gálatas 6:9.</p>
              <p>Αν δεν αποκάμνουμε, θα θερίσουμε στον κατάλληλο καιρό. — ΠΡΟΣ ΓΑΛΑΤΑΣ 6:9β.</p>
-             <p>©{new Date().getFullYear()} - Todos os direitos reservados.</p>
+             <p>Αρχή PDF ©{new Date().getFullYear()} - Todos os direitos reservados. | Suporte - <a title="Ajuda" href="mailto:ti@advocaciabichara.com.br">Clique Aqui</a></p>
           </footer>
         </main>
 
