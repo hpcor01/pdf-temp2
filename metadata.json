@@ -1,9 +1,12 @@
 {
   "name": "Αρχή PDF - Editor de Imagens e PDF",
+<<<<<<< HEAD
   "author": "L. Stivan; H. Cordeiro",
   "version": "2.0",
   "contacts": "ti@advocaciabichara.com.br",
   "keywords": ["pdf", "image", "editor", "ai", "organizer", "enhancement"],
+=======
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
   "description": "An intelligent image editing and document organization tool. Organize images into columns, perform AI enhancements like background removal, and export to PDF.",
   "requestFramePermissions": []
 }

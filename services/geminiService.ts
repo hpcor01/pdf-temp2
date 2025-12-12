@@ -102,6 +102,7 @@ export const enhanceImage = async (imageUrl: string): Promise<string> => {
   }
 };
 
+<<<<<<< HEAD
 export const magicEraser = async (compositeImageUrl: string): Promise<string> => {
   const ai = getAiClient();
   const base64Data = await urlToBase64(compositeImageUrl);
@@ -143,6 +144,8 @@ export const magicEraser = async (compositeImageUrl: string): Promise<string> =>
   }
 };
 
+=======
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
 export const identifyPageNumber = async (imageUrl: string): Promise<number> => {
   const ai = getAiClient();
   const base64Data = await urlToBase64(imageUrl);

@@ -54,6 +54,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     autoSort: "Ordenar Auto",
     sorting: "Ordenando...",
     sortSuccess: "Páginas ordenadas com sucesso",
+<<<<<<< HEAD
     sortError: "Erro ao ordenar páginas",
     zoomIn: "Aumentar Zoom",
     zoomOut: "Diminuir Zoom",
@@ -62,6 +63,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     viewPage: "Visualizar Página",
     nextPage: "Próxima",
     prevPage: "Anterior"
+=======
+    sortError: "Erro ao ordenar páginas"
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
   },
   'en': {
     selectAll: "Select All",
@@ -108,6 +112,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     autoSort: "Auto Sort",
     sorting: "Sorting...",
     sortSuccess: "Pages sorted successfully",
+<<<<<<< HEAD
     sortError: "Error sorting pages",
     zoomIn: "Zoom In",
     zoomOut: "Zoom Out",
@@ -116,6 +121,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     viewPage: "View Page",
     nextPage: "Next",
     prevPage: "Previous"
+=======
+    sortError: "Error sorting pages"
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
   },
   'es': {
     selectAll: "Seleccionar todos",
@@ -162,6 +170,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     autoSort: "Ordenar Auto",
     sorting: "Ordenando...",
     sortSuccess: "Páginas ordenadas",
+<<<<<<< HEAD
     sortError: "Error al ordenar",
     zoomIn: "Acercar",
     zoomOut: "Alejar",
@@ -170,6 +179,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     viewPage: "Ver Página",
     nextPage: "Siguiente",
     prevPage: "Anterior"
+=======
+    sortError: "Error al ordenar"
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
   },
   'el': {
     selectAll: "Επιλογή όλων",
@@ -216,6 +228,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     autoSort: "Αυτόματη ταξινόμηση",
     sorting: "Ταξινόμηση...",
     sortSuccess: "Επιτυχής ταξινόμηση",
+<<<<<<< HEAD
     sortError: "Σφάλμα ταξινόμησης",
     zoomIn: "Μεγέθυνση",
     zoomOut: "Σμίκρυνση",
@@ -224,6 +237,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     viewPage: "Προβολή Σελίδας",
     nextPage: "Επόμενη",
     prevPage: "Προηγούμενη"
+=======
+    sortError: "Σφάλμα ταξινόμησης"
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
   },
   'he': {
     selectAll: "בחר הכל",
@@ -270,6 +286,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     autoSort: "מיון אוטומטי",
     sorting: "ממיין...",
     sortSuccess: "מוין בהצלחה",
+<<<<<<< HEAD
     sortError: "שגיאה במיון",
     zoomIn: "הגדל תצוגה",
     zoomOut: "הקטן תצוגה",
@@ -278,5 +295,8 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     viewPage: "הצג עמוד",
     nextPage: "הבא",
     prevPage: "הקודם"
+=======
+    sortError: "שגיאה במיון"
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
   }
 };

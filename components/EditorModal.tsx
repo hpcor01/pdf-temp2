@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+<<<<<<< HEAD
 import { X, Wand2, Eraser, Check, Undo, RotateCcw, Redo, ZoomIn, ZoomOut, Search, Sparkles, Brush } from 'lucide-react';
+=======
+import { X, Wand2, Eraser, Check, Undo, RotateCcw, Redo, ZoomIn, ZoomOut, Search } from 'lucide-react';
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
 import { ImageItem, Language } from '../types';
 import { removeBackground, enhanceImage, magicEraser } from '../services/geminiService';
 import { TRANSLATIONS } from '../constants';
@@ -43,6 +47,9 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
   // Zoom State
   const [zoom, setZoom] = useState(1);
   
+  // Zoom State
+  const [zoom, setZoom] = useState(1);
+  
   const imageRef = useRef<HTMLImageElement>(null);
   const maskCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -54,8 +61,11 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
       setMaskLines([]);
       setIsSelecting(false);
       setZoom(1);
+<<<<<<< HEAD
       setActiveTool('none');
       setCursorPos(null);
+=======
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
     }
   }, [item, isOpen]);
 
@@ -129,6 +139,7 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
       setCurrentIndex(0);
       setCrop(null);
       setZoom(1);
+<<<<<<< HEAD
       setMaskLines([]);
       setActiveTool('none');
     }
@@ -140,6 +151,15 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
 
   // --- AI Actions ---
 
+=======
+    }
+  };
+
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.5, 5));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.5, 1));
+  const handleZoomReset = () => setZoom(1);
+
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
   const handleAiAction = async (action: 'bg' | 'enhance') => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -152,6 +172,7 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
       }
       pushToHistory(newUrl);
     } catch (e) {
+<<<<<<< HEAD
       alert("AI processing failed. Check API Key.");
     } finally {
       setIsProcessing(false);
@@ -204,6 +225,9 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
     } catch (e) {
       console.error(e);
       alert("Magic Eraser failed.");
+=======
+      alert("AI processing failed. Please check your API key.");
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
     } finally {
       setIsProcessing(false);
     }
@@ -259,8 +283,19 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
       setCursorPos({ x: e.clientX, y: e.clientY });
     }
 
+<<<<<<< HEAD
     const coords = getImgCoordinates(e);
     if (!coords) return;
+=======
+    const rect = imageRef.current.getBoundingClientRect();
+    
+    const rawX = e.clientX - rect.left;
+    const rawY = e.clientY - rect.top;
+    
+    // Constrain within the visual (zoomed) dimensions
+    const currentX = Math.max(0, Math.min(rawX, rect.width));
+    const currentY = Math.max(0, Math.min(rawY, rect.height));
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
 
     if (activeTool === 'eraser' && isDrawing) {
       setMaskLines(prev => {
@@ -296,6 +331,12 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
     }
 
     const canvas = document.createElement('canvas');
+<<<<<<< HEAD
+=======
+    
+    // Important: rect.width includes the zoom scale. 
+    // We compare natural dimensions to visual dimensions to get the correct crop ratio.
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
     const rect = imageRef.current.getBoundingClientRect();
     const scaleX = imageRef.current.naturalWidth / rect.width;
     const scaleY = imageRef.current.naturalHeight / rect.height;
@@ -397,6 +438,7 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Tools Sidebar */}
+<<<<<<< HEAD
           <div className="w-64 bg-gray-50 dark:bg-gray-850 p-4 border-r border-gray-200 dark:border-gray-800 flex flex-col flex-shrink-0 z-20 overflow-y-auto">
             <div className="space-y-4">
               <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t.aiTools}</div>
@@ -409,6 +451,19 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
                 <Eraser className="mr-3 text-emerald-500 dark:text-emerald-400" size={18} />
                 {t.removeBg}
               </button>
+=======
+          <div className="w-64 bg-gray-50 dark:bg-gray-850 p-4 border-r border-gray-200 dark:border-gray-800 space-y-4 flex-shrink-0 z-20">
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t.aiTools}</div>
+            
+            <button 
+              onClick={() => handleAiAction('bg')}
+              disabled={isProcessing}
+              className="w-full flex items-center p-3 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-gray-700 dark:text-gray-200 disabled:opacity-50"
+            >
+              <Eraser className="mr-3 text-emerald-500 dark:text-emerald-400" size={18} />
+              {t.removeBg}
+            </button>
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
 
               <button 
                 onClick={() => { setActiveTool('none'); handleAiAction('enhance'); }}
@@ -470,7 +525,11 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
           <div className="flex-1 bg-gray-100 dark:bg-gray-950 flex overflow-auto relative select-none custom-scrollbar">
             <div className="min-w-full min-h-full flex items-center justify-center p-10">
                 {isProcessing && (
+<<<<<<< HEAD
                    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/50 dark:bg-black/50 backdrop-blur-sm">
+=======
+                   <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/50 dark:bg-black/50 backdrop-blur-sm fixed top-0 left-0 w-full h-full">
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
                       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mb-4"></div>
                       <span className="text-emerald-600 dark:text-emerald-400 font-medium animate-pulse">
                         {t.processing}
@@ -479,9 +538,13 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
                 )}
                 
                 <div 
+<<<<<<< HEAD
                   className={`relative inline-block border border-gray-300 dark:border-gray-700 shadow-xl 
                     ${activeTool === 'eraser' ? 'cursor-none' : 'cursor-crosshair'}
                     bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iI2YwZjBmMCI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZThlOGU4IiAvPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZThlOGU4IiAvPjwvc3ZnPg==')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iIzIyMjIyMiI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMzMzMzMzIiAvPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMzMzMzMzIiAvPjwvc3ZnPg==')]`}
+=======
+                  className="relative inline-block border border-gray-300 dark:border-gray-700 shadow-xl cursor-crosshair bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iI2YwZjBmMCI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZThlOGU4IiAvPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZThlOGU4IiAvPjwvc3ZnPg==')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iIzIyMjIyMiI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMzMzMzMzIiAvPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMzMzMzMzIiAvPjwvc3ZnPg==')]"
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
                   onMouseDown={handleMouseDown}
                   // Allow the container to grow with the zoomed image
                   style={{
@@ -501,6 +564,7 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
                     }} 
                     draggable={false}
                   />
+<<<<<<< HEAD
 
                   {/* Eraser Mask Canvas Overlay */}
                   <canvas 
@@ -531,6 +595,13 @@ const EditorModal: React.FC<EditorModalProps> = ({ item, isOpen, onClose, onUpda
                   {crop && activeTool !== 'eraser' && (
                     <div 
                       className="absolute border-2 border-white bg-emerald-500/20 shadow-[0_0_0_4000px_rgba(0,0,0,0.5)] pointer-events-none"
+=======
+                  
+                  {/* Crop Overlay */}
+                  {crop && (
+                    <div 
+                      className="absolute border-2 border-white bg-emerald-500/20 shadow-[0_0_0_4000px_rgba(0,0,0,0.5)]"
+>>>>>>> ae3e811bb63fb9a3b17d7b8fc6399631f13b12b1
                       style={{
                         left: crop.w < 0 ? crop.x + crop.w : crop.x,
                         top: crop.h < 0 ? crop.y + crop.h : crop.y,
